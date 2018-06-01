@@ -1,5 +1,5 @@
 # Docker CI - Docker Client
-[![CircleCI](https://circleci.com/gh/WsCandy/ci-docker.svg?style=shield)](https://circleci.com/gh/WsCandy/ci-docker)
+[![CircleCI](https://circleci.com/gh/WsCandy/ci-docker.svg?style=shield)](https://circleci.com/gh/WsCandy/ci-docker) [![](https://images.microbadger.com/badges/image/wscandy/ci-docker.svg)](https://microbadger.com/images/wscandy/ci-docker) [![](https://images.microbadger.com/badges/version/wscandy/ci-docker.svg)](https://microbadger.com/images/wscandy/ci-docker)  
 
 This docker image contains the Docker Client, if you wish to create docker images, and push them to DockerHub on CircleCI then this is the container for you!
 
