@@ -1,12 +1,8 @@
 defaults: &defaults
   docker:
     - image: wscandy/ci-docker
-      auth:
-        username: $DOCKERHUB_USERNAME
-        password: $DOCKERHUB_PASSWORD
   working_directory: ~/repo
   environment:
-    VERSION: "1.0.0"
     IMAGE: "ci-docker"
 
 version: 2
@@ -20,14 +16,26 @@ jobs:
       - run:
           name: Build Images
           command: |
+              docker build -t $DOCKERHUB_USER/$IMAGE .
+
+  build_tagged:
+    <<: *defaults
+    steps:
+      - checkout
+      - setup_remote_docker:
+          docker_layer_caching: true
+      - run:
+          name: Build Images
+          command: |
               mkdir -p docker_cache
-              docker build -t $DOCKERHUB_USER/$IMAGE:$VERSION -t $DOCKERHUB_USER/$IMAGE .
-              docker save -o docker_cache/$VERSION.tar $DOCKERHUB_USER/$IMAGE:$VERSION
+              docker build -t $DOCKERHUB_USER/$IMAGE:$CIRCLE_TAG -t $DOCKERHUB_USER/$IMAGE .
+              docker save -o docker_cache/$CIRCLE_TAG.tar $DOCKERHUB_USER/$IMAGE:$CIRCLE_TAG
               docker save -o docker_cache/$IMAGE.tar $DOCKERHUB_USER/$IMAGE
       - persist_to_workspace:
           root: .
           paths:
             - docker_cache
+
   push:
     <<: *defaults
     steps:
@@ -39,8 +47,8 @@ jobs:
           name: Push Images
           command: |
               docker login -u $DOCKERHUB_USER -p $DOCKERHUB_PASSWORD
-              docker load < docker_cache/$VERSION.tar
-              docker push $DOCKERHUB_USER/$IMAGE:$VERSION
+              docker load < docker_cache/$CIRCLE_TAG.tar
+              docker push $DOCKERHUB_USER/$IMAGE:$CIRCLE_TAG
               docker load < docker_cache/$IMAGE.tar
               docker push $DOCKERHUB_USER/$IMAGE
 
@@ -50,11 +58,19 @@ workflows:
     jobs:
       - build:
           context: wscandy
+      - build_tagged:
+          context: wscandy
+          filters:
+            tags:
+              only: /.*/
+            branches:
+              ignore: /.*/
       - push:
           context: wscandy
           requires:
-            - build
+            - build_tagged
           filters:
+            tags:
+              only: /.*/
             branches:
-              only:
-                - master
+              ignore: /.*/
