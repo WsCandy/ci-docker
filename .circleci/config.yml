@@ -1,6 +1,6 @@
 defaults: &defaults
   docker:
-    - image: wscandy/ci-docker
+    - image: wscandy/ci-docker:1.1.0
   working_directory: ~/repo
   environment:
     IMAGE: "ci-docker"
@@ -15,8 +15,7 @@ jobs:
           docker_layer_caching: true
       - run:
           name: Build Images
-          command: |
-              docker build -t $DOCKERHUB_USER/$IMAGE .
+          command: make build
   build_tagged:
     <<: *defaults
     steps:
@@ -25,11 +24,7 @@ jobs:
           docker_layer_caching: true
       - run:
           name: Build Images
-          command: |
-              mkdir -p docker_cache
-              docker build -t $DOCKERHUB_USER/$IMAGE:$CIRCLE_TAG -t $DOCKERHUB_USER/$IMAGE .
-              docker save -o docker_cache/$CIRCLE_TAG.tar $DOCKERHUB_USER/$IMAGE:$CIRCLE_TAG
-              docker save -o docker_cache/$IMAGE.tar $DOCKERHUB_USER/$IMAGE
+          command: make ci-build
       - persist_to_workspace:
           root: .
           paths:
@@ -43,12 +38,7 @@ jobs:
           docker_layer_caching: true
       - run:
           name: Push Images
-          command: |
-              docker login -u $DOCKERHUB_USER -p $DOCKERHUB_PASSWORD
-              docker load < docker_cache/$CIRCLE_TAG.tar
-              docker push $DOCKERHUB_USER/$IMAGE:$CIRCLE_TAG
-              docker load < docker_cache/$IMAGE.tar
-              docker push $DOCKERHUB_USER/$IMAGE
+          command: make push
 
 workflows:
   version: 2
