@@ -1,4 +1,4 @@
-FROM wscandy/ci-base
+FROM wscandy/ci-base:1.1.0
 
 MAINTAINER WsCandy <s-bridge@live.co.uk>
 
