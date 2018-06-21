@@ -32,6 +32,7 @@ jobs:
   push:
     <<: *defaults
     steps:
+      - checkout
       - attach_workspace:
           at: ~/repo
       - setup_remote_docker:
